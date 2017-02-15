@@ -1,47 +1,38 @@
-/*global digitalData,YT*/
-var digitalData = digitalData || {};
-digitalData._log = digitalData._log || [];
-
-var debug = function () {
-  if (! window.console || ! console.log) {
-    return;
-  }
-  return Function.prototype.bind.call(console.log, console);
-} ();
 /**
- * Update the Instance Variable with the new functionality
- * @param measure {function} The original function with page data
- * @param measure.q {Array}
+ * Main method
+ * @param originalQueue {Object} object containing queue of previously notified events
  */
-var measure = (function (measure) {
+measure = function (originalQueue) {
   /**
    * New function to operate the gathered data
    * @method measureInterface
    * @param data {object} Object with data to measure
    */
   var measureInterface = function (data) {
-    var digitalDataSnapshot;
-    if (typeof data.event !== "undefined") {
-      measureInterface._fired = true;
-      digitalData = measureInterface._deepMerge(digitalData, data);
-      digitalDataSnapshot = JSON.parse(JSON.stringify(digitalData));
-      delete digitalDataSnapshot._log;
-      debug("Event captured. Available data:");
-      debug(JSON.stringify(digitalDataSnapshot, null, 4));
-      debug("---------------------------------------------");
-      data._timestamp = new Date().getTime();
-      digitalData._log.push(data);
-      measureInterface._process(data);
-    } else {
-      throw "Missing Event ID";
+    data = data || {};
+    if (typeof data.event === 'undefined') {
+      data.event = 'pageView';
     }
+
+    //data._timestamp = new Date().getTime();
+
+    window.digitalData = measureInterface._deepMerge(window.digitalData, data);
+    window.digitalData._log = window.digitalData._log || [];
+    window.digitalData._log.push(data);
+
+    measureInterface.process(data);
+
+    console.log('MEASURE: Event captured:');
+    console.log('MEASURE: ' + JSON.stringify(data, null, 4).replace(/\n/g, '\nMEASURE: '));
+    console.log('MEASURE: ' + '---------------------------------------------');
   };
 
   /**
-   * Fired flag to fallback to the automatic URL-based measurement
-   * @private
+   * Events queue
+   * @type {*|Array}
+   * @public
    */
-  measureInterface._fired = false;
+  measureInterface.q = originalQueue.q || [];
 
   /**
    * Function to merge objects recursively
@@ -55,16 +46,15 @@ var measure = (function (measure) {
     var dst = isArray && src || {};
 
     if (!isArray) {
-      if (target && typeof target === "object") {
+      if (target && typeof target === 'object') {
         Object.keys(target).forEach(function (key) {
           dst[key] = target[key];
-        })
+        });
       }
       Object.keys(src).forEach(function (key) {
-        if (typeof src[key] !== "object" || !src[key]) {
+        if (typeof src[key] !== 'object' || !src[key]) {
           dst[key] = src[key];
-        }
-        else {
+        } else {
           if (!target[key]) {
             dst[key] = src[key];
           } else {
@@ -79,19 +69,24 @@ var measure = (function (measure) {
 
   /**
    * Default measure process function to override
-   * @method _process
+   * @method process
    * @private
-   * @param data {object} Object with data to measure
-   * @param data.contact {String}
-   * @param data.error {String}
-   * @param data.fileNAme {String}
-   * @param data.username {String}
    */
-  measureInterface._process = function (data) {
-    // do nothing
+  measureInterface.process = function (data) {
+    switch (data.event) {
+    default:
+      utag.view(data);
+      break;
+    }
   };
+
+  for (var i = measureInterface.q.length; i > 0; i--) {
+    measureInterface(measureInterface.q.shift()[0]); // Process the previously inserted data
+  }
+
   return measureInterface;
-}(measure));
+}(measure);
+
 
 /*
  * Init Youtube Iframe API
