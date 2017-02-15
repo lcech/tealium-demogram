@@ -1,0 +1,41 @@
+html {
+  height: 102%; /* always keep a scrollbar */
+}
+body {
+  padding-bottom: 20px;
+}
+.navbar-default {
+  margin-bottom: 0;
+}
+.navbar .nav a {
+  font-weight: bold;
+}
+#loginForm {
+  padding-right: 0;
+}
+.jumbotron {
+  background: url(/img/finance-bg.jpg) no-repeat 0 50%;
+  background-size: cover;
+  border-bottom: 1px solid #e7e7e7;
+  margin-bottom: 0;
+  text-shadow: White 0.1em 0.1em 0.3em;
+}
+.content {
+  margin-top: 1em;
+}
+.CodeMirror {
+  height: inherit;
+}
+.code-example, .code-example textarea {
+  border: 0;
+  background: #263238;
+}
+.tab-content .panel {
+  border-top: 0;
+}
+.navbar-brand>img {
+  display: inline;
+}
+.navbar-brand span:hover {
+  color: inherit;
+}
